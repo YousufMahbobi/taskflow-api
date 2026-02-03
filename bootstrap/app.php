@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ForceJsonResponse;
 use App\Support\ApiResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -17,12 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+
+        $middleware->api(prepend: [
+            ForceJsonResponse::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         
         // Validation errors (422)
        $exceptions->render(function (ValidationException $e, $request) {
+
            if($request->expectsJson()){
                return ApiResponse::error(
                    'Validation failed',
@@ -36,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
  
        // Model not found (404)
        $exceptions->render(function (ModelNotFoundException $e, $request) {
+
            if($request->expectsJson()){
                return ApiResponse::error(
                    $e->getMessage() ?: 'Resource not found',
@@ -48,6 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
  
         // HTTP exceptions (401, 403, 404, etc.)
         $exceptions->render(function (HttpExceptionInterface $e, $request) {
+            
                 if ($request->expectsJson()) {
                     return ApiResponse::error(
                         $e->getMessage() ?: 'HTTP error',
