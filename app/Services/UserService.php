@@ -31,7 +31,8 @@ class UserService
             }
  
             if(isset($data['avatar'])){
-                $data['avatar'] = $data['avatar']->store('avatars', 'public');
+                $filePath = $data['avatar']->store('avatars', 'public');
+                $data['avatar'] = Storage::url($filePath);
             }
  
             return User::create($data);
@@ -57,7 +58,8 @@ class UserService
                     Storage::disk('public')->delete($user->avatar);
                 }
  
-                $data['avatar'] = $data['avatar']->store('avatars', 'public');
+                $filePath = $data['avatar']->store('avatars', 'public');
+                $data['avatar'] = Storage::url($filePath);
             }
  
             $user->update($data);
